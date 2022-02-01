@@ -4,7 +4,7 @@ import logo from '../assets/img/logo.png';
 import cart from '../assets/img/cart.svg';
 import user from '../assets/img/user.svg';
 
-function Header() {
+function Header(props) {
   return (
     <header className="header">
       <div className="headerLeft">
@@ -15,7 +15,7 @@ function Header() {
         </div>
       </div>
       <ul className="headeRight">
-        <li className="mr-30">
+        <li onClick={props.onClickCart} className="mr-30 cu-p">
           <img src={cart} alt="Cart" />
           <span>1205 руб.</span>
         </li>

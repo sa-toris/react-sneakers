@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useContext, useEffect } from 'react';
+import axios from 'axios';
 
 import Card from './components/Card';
 import Header from './components/Header';
@@ -12,16 +13,30 @@ import search from '../src/assets/img/search.svg';
 import unliked from '../src/assets/img/unliked.svg';
 import arrow from '../src/assets/img/arrow.svg';
 import btnRemove from '../src/assets/img/btn-remove.svg';
-import sneaker1 from '../src/assets/img/sneakers/1.jpg';
-import sneaker2 from '../src/assets/img/sneakers/2.jpg';
-import sneaker3 from '../src/assets/img/sneakers/3.jpg';
-import sneaker4 from '../src/assets/img/sneakers/4.jpg';
 
 function App() {
+  const [items, setItems] = useState([]);
+  const [cartItems, setCartItems] = useState([]);
+  const [cartOpened, setCartOpened] = useState(false);
+
+  useEffect(() => {
+    fetch('https://61f908cc783c1d0017c448d4.mockapi.io/items')
+      .then((res) => {
+        return res.json();
+      })
+      .then((json) => {
+        setItems(json);
+      });
+  }, []);
+
+  const onAddToCart = (obj) => {
+    setCartItems((prev) => [...prev, obj]);
+  };
+
   return (
     <div className="wrapper clear">
-      <Drawer />
-      <Header />
+      {cartOpened && <Drawer items={cartItems} onClose={() => setCartOpened(false)} />}
+      <Header onClickCart={() => setCartOpened(true)} />
       <div className="content">
         <div className="d-flex align-center justify-between mb-40">
           <h1>Все кросовки</h1>
@@ -32,7 +47,16 @@ function App() {
         </div>
 
         <div className="sneakers">
-          <Card />
+          {items.map((item) => (
+            <Card
+              onClick={item.onFavorite}
+              title={item.title}
+              price={item.price}
+              imageUrl={item.imageUrl}
+              onFavorit={() => console.log('Добавили в закладки')}
+              onPlus={(obj) => onAddToCart(item)}
+            />
+          ))}
         </div>
       </div>
     </div>
