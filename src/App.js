@@ -1,22 +1,17 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Route, Routes } from 'react-router-dom';
 
-import Card from './components/Card';
 import Header from './components/Header';
 import Drawer from './components/Drawer';
 
-import logo from '../src/assets/img/logo.png';
-import cart from '../src/assets/img/cart.svg';
-import user from '../src/assets/img/user.svg';
-import plus from '../src/assets/img/plus.svg';
-import search from '../src/assets/img/search.svg';
-import unliked from '../src/assets/img/unliked.svg';
-import arrow from '../src/assets/img/arrow.svg';
-import btnRemove from '../src/assets/img/btn-remove.svg';
+import Home from './pages/Home.jsx';
+import Favorites from './pages/Favorites.jsx';
 
 function App() {
   const [items, setItems] = useState([]);
   const [cartItems, setCartItems] = useState([]);
+  const [favorites, setFavorites] = useState([]);
   const [searchValue, setSearchValue] = useState([]);
   const [cartOpened, setCartOpened] = useState(false);
 
@@ -26,6 +21,9 @@ function App() {
     });
     axios.get('https://61f908cc783c1d0017c448d4.mockapi.io/cart').then((res) => {
       setCartItems(res.data);
+    });
+    axios.get('https://61f908cc783c1d0017c448d4.mockapi.io/favorites').then((res) => {
+      setFavorites(res.data);
     });
   }, []);
 
@@ -39,6 +37,22 @@ function App() {
     setCartItems((prev) => prev.filter((item) => Number(item.id) !== Number(id)));
   };
 
+  const onAddFavorite = async (obj) => {
+    try {
+      if (favorites.find((favObj) => favObj.id === obj.id)) {
+        axios.delete(`https://61f908cc783c1d0017c448d4.mockapi.io/favorites/${obj.id}`);
+      } else {
+        const { data } = await axios.post(
+          'https://61f908cc783c1d0017c448d4.mockapi.io/favorites',
+          obj,
+        );
+        setFavorites((prev) => [...prev, data]);
+      }
+    } catch (error) {
+      alert('Не удалось добавить в фавориты');
+    }
+  };
+
   const onChangeSearchInput = (e) => {
     setSearchValue(e.target.value);
   };
@@ -49,44 +63,25 @@ function App() {
         <Drawer onRemove={onRemoveItem} items={cartItems} onClose={() => setCartOpened(false)} />
       )}
       <Header onClickCart={() => setCartOpened(true)} />
-      <div className="content">
-        <div className="d-flex align-center justify-between mb-40">
-          <h1>{searchValue ? `Поиск по запросу: '${searchValue}'` : 'Все кросовки'}</h1>
-          <div className="search-block d-flex">
-            <img src={search} alt="Search"></img>
-            {searchValue && (
-              <img
-                onClick={() => setSearchValue('')}
-                className=" clear cu-p"
-                src={btnRemove}
-                alt="Remove"
-              />
-            )}
-            <input
-              onChange={onChangeSearchInput}
-              value={searchValue}
-              placeholder="Поиск..."></input>
-          </div>
-        </div>
-
-        <div className="sneakers">
-          {items
-            .filter((item) =>
-              item.title.toLowerCase().includes(searchValue.toString().toLowerCase()),
-            )
-            .map((item) => (
-              <Card
-                key={item.title}
-                onClick={item.onFavorite}
-                title={item.title}
-                price={item.price}
-                imageUrl={item.imageUrl}
-                onFavorit={() => console.log('Добавили в закладки')}
-                onPlus={(obj) => onAddToCart(obj)}
-              />
-            ))}
-        </div>
-      </div>
+      <Routes>
+        <Route
+          path=""
+          exact
+          element={
+            <Home
+              items={items}
+              searchValue={searchValue}
+              setSearchValue={setSearchValue}
+              onChangeSearchInput={onChangeSearchInput}
+              onAddFavorite={onAddFavorite}
+              onAddToCart={onAddToCart}
+            />
+          }></Route>
+        <Route
+          path="favorites"
+          exact
+          element={<Favorites items={favorites} onAddFavorite={onAddFavorite} />}></Route>
+      </Routes>
     </div>
   );
 }
