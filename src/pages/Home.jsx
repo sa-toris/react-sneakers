@@ -21,7 +21,7 @@ function Home({
 
     return (isLoading ? [...Array(8)] : filtredItems).map((item, index) => (
       <Card
-        key={(item, index)}
+        key={index}
         onFavorite={(obj) => onAddFavorite(obj)}
         onPlus={(obj) => onAddToCart(obj)}
         loading={isLoading}

@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import ContentLoader from 'react-content-loader';
+
+import AppContext from '../../context';
 
 import styles from './Card.module.scss';
 
@@ -10,25 +12,24 @@ import liked from '../../assets/img/liked.svg';
 
 function Card({
   id,
-  onFavorite,
   imageUrl,
   title,
   price,
+  onFavorite,
   onPlus,
   favorited = false,
-  added = false,
   loading = false,
 }) {
-  const [isAdded, setIsAdded] = useState(added);
+  const { isItemAdded } = useContext(AppContext);
   const [isFavorite, setIsFavorite] = useState(favorited);
+  const obj = { id, parentId: id, title, imageUrl, price };
 
   const onClickPlus = () => {
-    onPlus({ id, title, price, imageUrl });
-    setIsAdded(!isAdded);
+    onPlus(obj);
   };
 
   const onClickFavorite = () => {
-    onFavorite({ id, title, price, imageUrl });
+    onFavorite(obj);
     setIsFavorite(!isFavorite);
   };
 
@@ -50,9 +51,11 @@ function Card({
         </ContentLoader>
       ) : (
         <>
-          <div className={styles.favorit} onClick={onClickFavorite}>
-            <img src={isFavorite ? liked : unliked} alt="Unliked" />
-          </div>
+          {onFavorite && (
+            <div className={styles.favorite} onClick={onClickFavorite}>
+              <img src={isFavorite ? liked : unliked} alt="Unliked" />
+            </div>
+          )}
           <img width={133} height={122} src={imageUrl} alt="ImageUrl" />
           <h5>{title}</h5>
           <div className={styles.cardBottom}>
@@ -60,14 +63,14 @@ function Card({
               <span>Цена:</span>
               <b>{price} руб.</b>
             </div>
-            <div>
+            {onPlus && (
               <img
                 className={styles.plus}
                 onClick={onClickPlus}
-                src={isAdded ? btnChecked : plus}
+                src={isItemAdded(id) ? btnChecked : plus}
                 alt="Plus"
               />
-            </div>
+            )}
           </div>
         </>
       )}
